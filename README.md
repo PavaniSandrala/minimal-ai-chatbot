@@ -18,4 +18,4 @@ A simple AI chatbot built using Streamlit, LangChain and Groq.
 
 ## 🌐 Live Demo
 
-[Try the chatbot](https://yvtmwqyrd3hcyqrle6ebhu.streamlit.app/)
+[Try the chatbot] (https://yvtmwqyrd3hcyqrle6ebhu.streamlit.app/)
