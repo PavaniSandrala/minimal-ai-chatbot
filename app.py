@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_groq import ChatGroq
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
+# Page configuration
 st.set_page_config(
     page_title="Minimal AI Chatbot",
     page_icon="🤖"
@@ -10,22 +10,46 @@ st.set_page_config(
 st.title("🤖 Minimal AI Chatbot")
 st.caption("Powered by Groq + LangChain")
 
-# Create the AI model
+# Get API key from Streamlit Secrets
+api_key = st.secrets["GROQ_API_KEY"]
+
+# Create Groq model
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    temperature=0.7,
-    api_key=st.secrets["GROQ_API_KEY"]
+    api_key=api_key,
+    model="llama-3.3-70b-versatile"
 )
 
-# Store conversation
+# Store chat messages
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        SystemMessage(
-            content="You are a helpful and friendly AI assistant."
-        )
-    ]
+    st.session_state.messages = []
 
-# New Chat button
+# Display previous messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Chat input
+if prompt := st.chat_input("Type your message..."):
+
+    # Display user message
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    st.session_state.messages.append({
+        "role": "user",
+        "content": prompt
+    })
+
+    # Get AI response
+    with st.chat_message("assistant"):
+        response = llm.invoke(st.session_state.messages)
+        answer = response.content
+        st.markdown(answer)
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": answer
+    })
 if st.button("🗑️ New Chat"):
     st.session_state.messages = [
         SystemMessage(
