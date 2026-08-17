@@ -16,7 +16,7 @@ api_key = st.secrets["GROQ_API_KEY"]
 # Groq model
 llm = ChatGroq(
     api_key=api_key,
-    model="llama-3.3-70b-versatile",
+    model="llama-3.1-8b-instant",
     temperature=0.7
 )
 
