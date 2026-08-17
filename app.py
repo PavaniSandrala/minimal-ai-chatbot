@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage, AIMessage
 
-# Page configuration
 st.set_page_config(
     page_title="Minimal AI Chatbot",
     page_icon="🤖"
@@ -10,28 +10,29 @@ st.set_page_config(
 st.title("🤖 Minimal AI Chatbot")
 st.caption("Powered by Groq + LangChain")
 
-# Get API key from Streamlit Secrets
+# API key
 api_key = st.secrets["GROQ_API_KEY"]
 
-# Create Groq model
+# Groq model
 llm = ChatGroq(
     api_key=api_key,
-    model="llama-3.3-70b-versatile"
+    model="llama-3.3-70b-versatile",
+    temperature=0.7
 )
 
-# Store chat messages
+# Chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display previous messages
+# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
+# User input
 if prompt := st.chat_input("Type your message..."):
 
-    # Display user message
+    # Show user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -40,9 +41,22 @@ if prompt := st.chat_input("Type your message..."):
         "content": prompt
     })
 
-    # Get AI response
+    # Convert history to LangChain messages
+    chat_messages = []
+
+    for message in st.session_state.messages:
+        if message["role"] == "user":
+            chat_messages.append(
+                HumanMessage(content=message["content"])
+            )
+        elif message["role"] == "assistant":
+            chat_messages.append(
+                AIMessage(content=message["content"])
+            )
+
+    # Get response
     with st.chat_message("assistant"):
-        response = llm.invoke(st.session_state.messages)
+        response = llm.invoke(chat_messages)
         answer = response.content
         st.markdown(answer)
 
@@ -50,83 +64,3 @@ if prompt := st.chat_input("Type your message..."):
         "role": "assistant",
         "content": answer
     })
-if st.button("🗑️ New Chat"):
-    st.session_state.messages = [
-        SystemMessage(
-            content="You are a helpful and friendly AI assistant."
-        )
-    ]
-    st.rerun()
-
-# Display previous messages
-for message in st.session_state.messages:
-
-    if isinstance(message, HumanMessage):
-        with st.chat_message("user"):
-            st.markdown(message.content)
-
-    elif isinstance(message, AIMessage):
-        with st.chat_message("assistant"):
-            st.markdown(message.content)
-
-# User input
-user_input = st.chat_input("Type your message...")
-
-if user_input:
-
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    st.session_state.messages.append(
-        HumanMessage(content=user_input)
-    )
-
-    response = llm.invoke(st.session_state.messages)
-
-    with st.chat_message("assistant"):
-        st.markdown(response.content)
-
-    st.session_state.messages.append(
-        AIMessage(content=response.content)
-    )
-
-# New Chat button
-if st.button("🗑️ New Chat"):
-    st.session_state.messages = [
-        SystemMessage(
-            content="You are a helpful and friendly AI assistant."
-        )
-    ]
-    st.rerun()
-
-# Display previous messages
-for message in st.session_state.messages:
-
-    if isinstance(message, HumanMessage):
-        with st.chat_message("user"):
-            st.markdown(message.content)
-
-    elif isinstance(message, AIMessage):
-        with st.chat_message("assistant"):
-            st.markdown(message.content)
-
-# User input
-user_input = st.chat_input("Type your message...")
-
-if user_input:
-
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    st.session_state.messages.append(
-        HumanMessage(content=user_input)
-    )
-
-    response = llm.invoke(st.session_state.messages)
-
-    with st.chat_message("assistant"):
-        st.markdown(response.content)
-
-    st.session_state.messages.append(
-        AIMessage(content=response.content)
-    )
